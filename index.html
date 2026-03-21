@@ -239,6 +239,7 @@
   var works = [
     {
       title: "On What Remains",
+      titleKo: "남겨진 것들에 대하여",
       medium: "Oil on canvas",
       size: "162 × 130 cm",
       year: 2025,
@@ -246,6 +247,7 @@
     },
     {
       title: "Untitled (Kitchen)",
+      titleKo: "무제 (부엌)",
       medium: "Acrylic and graphite on linen",
       size: "80 × 100 cm",
       year: 2025,
@@ -253,6 +255,7 @@
     },
     {
       title: "Fold Marks",
+      titleKo: "접힌 자국",
       medium: "Charcoal on paper",
       size: "120 × 90 cm",
       year: 2024,
@@ -260,6 +263,7 @@
     },
     {
       title: "Window, 3 p.m.",
+      titleKo: "창문, 오후 세 시",
       medium: "Oil on canvas",
       size: "53 × 45.5 cm",
       year: 2024,
@@ -267,6 +271,7 @@
     },
     {
       title: "Pile",
+      titleKo: "더미",
       medium: "Oil stick and oil paint on canvas",
       size: "200 × 150 cm",
       year: 2023,
@@ -274,6 +279,7 @@
     },
     {
       title: "Night Inventory",
+      titleKo: "밤의 재고",
       medium: "Ink and watercolour on paper",
       size: "38 × 55 cm",
       year: 2023,
@@ -281,6 +287,7 @@
     },
     {
       title: "Shelf",
+      titleKo: "선반",
       medium: "Acrylic on canvas",
       size: "91 × 72.7 cm",
       year: 2022,
@@ -288,6 +295,7 @@
     },
     {
       title: "Traces of Use",
+      titleKo: "사용 흔적",
       medium: "Mixed media on paper",
       size: "297 × 420 mm",
       year: 2021,
@@ -295,6 +303,7 @@
     },
     {
       title: "Catalogue of a Room #3",
+      titleKo: "방의 목록 #3",
       medium: "Graphite on paper",
       size: "59.4 × 84.1 cm",
       year: 2020,
@@ -302,6 +311,7 @@
     },
     {
       title: "First Studio",
+      titleKo: "첫 번째 스튜디오",
       medium: "Oil on canvas",
       size: "145.5 × 112 cm",
       year: 2018,
@@ -365,7 +375,7 @@
       tr.className = "work-row";
       tr.innerHTML =
         '<td class="col-index">' + work.yearRank + '</td>' +
-        '<td class="col-title">' + esc(work.title) + '</td>' +
+        '<td class="col-title" data-en="' + esc(work.title) + '" data-ko="' + esc(work.titleKo) + '" data-lang="en">' + esc(work.title) + '</td>' +
         '<td class="col-medium">' + esc(work.medium) + '</td>' +
         '<td class="col-size" data-cm="' + esc(work.size) + '" data-unit="cm">' + esc(work.size) + '</td>' +
         '<td class="col-year">' + esc(String(work.year)) + '</td>';
@@ -384,6 +394,18 @@
 
       tr.addEventListener("click", function() {
         detail.classList.toggle("open");
+      });
+
+      tr.querySelector("td.col-title").addEventListener("click", function(e) {
+        e.stopPropagation();
+        var td = this;
+        if (td.dataset.lang === "en") {
+          td.textContent = td.dataset.ko;
+          td.dataset.lang = "ko";
+        } else {
+          td.textContent = td.dataset.en;
+          td.dataset.lang = "en";
+        }
       });
 
       tr.querySelector("td.col-size").addEventListener("click", function(e) {
