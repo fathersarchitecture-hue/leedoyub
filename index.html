@@ -356,11 +356,7 @@
         '</td>';
 
       tr.addEventListener("click", function() {
-        var expanded = detail.classList.contains("open");
-        document.querySelectorAll(".detail-row.open").forEach(function(d) {
-          d.classList.remove("open");
-        });
-        if (!expanded) detail.classList.add("open");
+        detail.classList.toggle("open");
       });
 
       tbody.appendChild(tr);
