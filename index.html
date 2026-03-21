@@ -225,7 +225,7 @@
       </colgroup>
       <thead>
         <tr>
-          <th class="col-index"></th>
+          <th class="col-index" data-col="idx" style="cursor:pointer"></th>
           <th class="col-title" data-col="title" style="cursor:pointer">Title</th>
           <th class="col-medium" data-col="medium" style="cursor:pointer">Medium</th>
           <th class="col-size" data-col="size" style="cursor:pointer">Size</th>
@@ -309,6 +309,8 @@
     }
   ];
 
+  works.forEach(function(w, i) { w.idx = i; });
+
   var sortCol = null;
   var sortDesc = true;
   var allRows = [];
@@ -326,15 +328,13 @@
     document.getElementById("sidebar").classList.toggle("open");
   }
 
+  var colLabels = { idx: "", title: "Title", medium: "Medium", size: "Size", year: "Year" };
+
   function updateHeaders() {
     document.querySelectorAll("#works-table thead th[data-col]").forEach(function(th) {
       var col = th.getAttribute("data-col");
-      var label = col.charAt(0).toUpperCase() + col.slice(1);
-      if (col === sortCol) {
-        th.innerHTML = label + " " + (sortDesc ? "&#9660;" : "&#9650;");
-      } else {
-        th.innerHTML = label;
-      }
+      var label = colLabels[col];
+      th.innerHTML = (col === sortCol) ? label + " " + (sortDesc ? "&#9660;" : "&#9650;") : label;
     });
   }
 
@@ -345,11 +345,14 @@
 
     var sorted = works.slice().sort(function(a, b) {
       if (!sortCol) return 0;
-      var av = String(a[sortCol]).toLowerCase();
-      var bv = String(b[sortCol]).toLowerCase();
-      var cmp = (sortCol === "year")
-        ? (a.year - b.year)
-        : av < bv ? -1 : av > bv ? 1 : 0;
+      var cmp;
+      if (sortCol === "idx" || sortCol === "year") {
+        cmp = a[sortCol] - b[sortCol];
+      } else {
+        var av = a[sortCol].toLowerCase();
+        var bv = b[sortCol].toLowerCase();
+        cmp = av < bv ? -1 : av > bv ? 1 : 0;
+      }
       return sortDesc ? -cmp : cmp;
     });
 
