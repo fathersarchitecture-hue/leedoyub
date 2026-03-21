@@ -1,14 +1,484 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ko">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Hello World</title>
-  <link href='/style.css' rel='stylesheet'>
+  <title>leedoyup</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 13px;
+      color: #000;
+      background: #fff;
+    }
+
+    a {
+      color: #00f;
+    }
+
+    a:visited {
+      color: #551a8b;
+    }
+
+    /* ── Layout ── */
+    #layout {
+      display: table;
+      width: 100%;
+      min-height: 100vh;
+    }
+
+    #sidebar {
+      display: table-cell;
+      width: 260px;
+      min-width: 260px;
+      vertical-align: top;
+      border-right: 1px solid #000;
+      padding: 20px 14px;
+    }
+
+    #content {
+      display: table-cell;
+      vertical-align: top;
+      padding: 0;
+      width: 100%;
+    }
+
+    /* ── Sidebar ── */
+    #site-title {
+      font-size: 15px;
+      font-weight: bold;
+      letter-spacing: 0;
+      margin-bottom: 20px;
+      text-transform: lowercase;
+    }
+
+    .sidebar-section {
+      margin-bottom: 20px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid #ccc;
+    }
+
+    .sidebar-section:last-child {
+      border-bottom: none;
+    }
+
+    .sidebar-section h2 {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 7px;
+    }
+
+    .sidebar-section p {
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .sidebar-section ul {
+      list-style: none;
+      padding: 0;
+    }
+
+    .sidebar-section ul li {
+      margin-bottom: 4px;
+      line-height: 1.4;
+    }
+
+    /* ── Mailing list ── */
+    #mailing-form {
+      margin-top: 6px;
+    }
+
+    #mailing-form input[type="email"] {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 13px;
+      border: 1px solid #000;
+      padding: 3px 5px;
+      width: 100%;
+      margin-bottom: 4px;
+    }
+
+    #mailing-form button {
+      font-family: "Times New Roman", Times, serif;
+      font-size: 13px;
+      border: 1px solid #000;
+      background: #fff;
+      padding: 3px 8px;
+      cursor: pointer;
+    }
+
+    #mailing-form button:hover {
+      background: #f5f5f5;
+    }
+
+    /* ── Works table ── */
+    #works-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+
+    #works-table thead tr {
+      border-bottom: 1px solid #000;
+    }
+
+    #works-table thead th {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      padding: 8px 10px;
+      text-align: left;
+    }
+
+    #works-table thead th.col-index {
+      text-align: right;
+      width: 36px;
+    }
+
+    #works-table thead th.col-title  { width: auto; }
+    #works-table thead th.col-medium { width: 160px; }
+    #works-table thead th.col-size   { width: 120px; }
+    #works-table thead th.col-year   { width: 52px; }
+
+    #works-table tbody tr.work-row {
+      cursor: pointer;
+      border-bottom: 1px solid #ccc;
+    }
+
+    #works-table tbody tr.work-row:hover {
+      background: #f5f5f5;
+    }
+
+    #works-table tbody tr.work-row td {
+      padding: 7px 10px;
+      vertical-align: top;
+    }
+
+    #works-table tbody tr.work-row td.col-index {
+      text-align: right;
+      color: #555;
+    }
+
+    /* ── Detail rows ── */
+    tr.detail-row {
+      display: none;
+      border-bottom: 1px solid #000;
+    }
+
+    tr.detail-row.open {
+      display: table-row;
+    }
+
+    tr.detail-row td {
+      padding: 14px 16px 16px 46px;
+      background: #fafafa;
+      border-top: 1px solid #ccc;
+    }
+
+    .detail-inner {
+      max-width: 640px;
+    }
+
+    .detail-inner p {
+      line-height: 1.6;
+      margin-bottom: 8px;
+    }
+
+    .detail-inner .detail-meta {
+      font-size: 11px;
+      color: #555;
+      margin-top: 6px;
+    }
+
+    /* ── Mobile ── */
+    @media (max-width: 680px) {
+      #layout {
+        display: block;
+      }
+
+      #sidebar {
+        display: block;
+        width: 100%;
+        border-right: none;
+        border-bottom: 1px solid #000;
+        padding: 16px 14px;
+      }
+
+      #content {
+        display: block;
+        width: 100%;
+      }
+
+      #works-table thead th.col-medium,
+      #works-table thead th.col-size,
+      #works-table tbody tr.work-row td.col-medium,
+      #works-table tbody tr.work-row td.col-size {
+        display: none;
+      }
+
+      tr.detail-row td {
+        padding-left: 16px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <h1>Hello, world!</h1>
-  <button onclick="console.log('hello');">Press me</button>
-  <script defer type="text/javascript" src="/main.js"></script>
+
+<div id="layout">
+
+  <!-- ── Sidebar ── -->
+  <div id="sidebar">
+
+    <div id="site-title">leedoyup</div>
+
+    <div class="sidebar-section">
+      <p>
+        이도엽(leedoyup)은 서울을 기반으로 활동하는 시각 예술가입니다.
+        회화, 드로잉, 설치를 통해 일상의 물질성과 기억의 층위를
+        탐구합니다. 그의 작업은 평범한 사물과 공간이 지닌 잠재적
+        서사에 주목하며, 최소한의 형식으로 감각의 밀도를 높이고자 합니다.
+      </p>
+      <p>
+        Lee Doyup is a Seoul-based visual artist working across painting,
+        drawing, and installation. His practice explores the materiality
+        of everyday life and the layered nature of memory.
+      </p>
+    </div>
+
+    <div class="sidebar-section">
+      <h2>Contact</h2>
+      <p><a href="mailto:studio@leedoyup.com">studio@leedoyup.com</a></p>
+      <p><a href="https://instagram.com/leedoyup" target="_blank" rel="noopener">Instagram</a></p>
+    </div>
+
+    <div class="sidebar-section">
+      <h2>Mailing List</h2>
+      <p>전시 및 새 작업 소식을 받아보세요.</p>
+      <form id="mailing-form" onsubmit="handleSubscribe(event)">
+        <input type="email" id="email-input" placeholder="your@email.com" required />
+        <button type="submit">Subscribe</button>
+      </form>
+      <p id="subscribe-msg" style="display:none; margin-top:5px; font-size:12px;"></p>
+    </div>
+
+    <div class="sidebar-section">
+      <h2>Upcoming / Current</h2>
+      <ul>
+        <li>
+          <strong>물질의 여백</strong><br />
+          2025.04.05 — 05.10<br />
+          갤러리 팩토리, 서울
+        </li>
+        <li style="margin-top:10px;">
+          <strong>Group: After Objects</strong><br />
+          2025.06.20 — 07.30<br />
+          ONE AND J. Gallery, Seoul
+        </li>
+        <li style="margin-top:10px;">
+          <strong>레지던시: Cité des Arts</strong><br />
+          2025.09 — 2025.11<br />
+          Paris, France
+        </li>
+      </ul>
+    </div>
+
+    <div class="sidebar-section">
+      <h2>CV</h2>
+      <ul>
+        <li>b. 1990, Seoul</li>
+        <li>MFA, Seoul National University, 2016</li>
+        <li>BFA, Hongik University, 2013</li>
+      </ul>
+    </div>
+
+  </div><!-- /sidebar -->
+
+  <!-- ── Right content ── -->
+  <div id="content">
+    <table id="works-table">
+      <thead>
+        <tr>
+          <th class="col-index"></th>
+          <th class="col-title">제목 / Title</th>
+          <th class="col-medium">재료 / Medium</th>
+          <th class="col-size">사이즈 / Size</th>
+          <th class="col-year">연도</th>
+        </tr>
+      </thead>
+      <tbody id="works-body">
+        <!-- rows injected by JS -->
+      </tbody>
+    </table>
+  </div>
+
+</div><!-- /layout -->
+
+<script>
+  var works = [
+    {
+      title: "남겨진 것들에 대하여",
+      titleEn: "On What Remains",
+      medium: "Oil on canvas",
+      size: "162 × 130 cm",
+      year: 2025,
+      desc: "대형 캔버스 위에 쌓인 여러 겹의 유화 층은 시간의 퇴적을 시각화한다. 인물의 부재와 사물의 잔재가 화면을 채우며, 관람자로 하여금 보이지 않는 존재를 상상하게 한다. A large canvas built up in successive layers of oil paint that visualize sediment and time. The absence of figures and the residue of objects fill the picture plane, prompting the viewer to imagine presences that are no longer there."
+    },
+    {
+      title: "무제 (부엌)",
+      titleEn: "Untitled (Kitchen)",
+      medium: "Acrylic and graphite on linen",
+      size: "80 × 100 cm",
+      year: 2025,
+      desc: "부엌이라는 가장 일상적인 공간을 흑연 선과 아크릴 물감으로 다시 그린다. 도구들의 위치와 빛의 각도가 특정 시간대를 암시하지만, 정확한 서사는 의도적으로 비워 둔다. The most mundane domestic space — a kitchen — is re-drawn with graphite line and acrylic wash. The placement of tools and angle of light suggest a specific hour without providing a definitive narrative."
+    },
+    {
+      title: "접힌 자국",
+      titleEn: "Fold Marks",
+      medium: "Charcoal on paper",
+      size: "120 × 90 cm",
+      year: 2024,
+      desc: "종이를 여러 번 접었다 폈을 때 남는 자국들을 목탄으로 강조하고 재구성한 드로잉 시리즈. 접힘 자체가 회화적 행위로 기능한다. A drawing that emphasises and re-composes the crease marks left after paper is folded and unfolded many times. The fold itself functions as a painterly act."
+    },
+    {
+      title: "창문, 오후 세시",
+      titleEn: "Window, 3 p.m.",
+      medium: "Oil on canvas",
+      size: "53 × 45.5 cm",
+      year: 2024,
+      desc: "특정 오후 세 시의 빛이 창문을 통과하는 방식을 기록한 소품. 짧은 시간 안에 완성된 이 그림은 즉각적인 감각 경험을 캔버스에 고정하려는 시도다. A small painting recording how light passes through a window at a specific 3 p.m. Completed quickly, it attempts to fix an immediate sensory experience onto canvas."
+    },
+    {
+      title: "더미",
+      titleEn: "Pile",
+      medium: "Oil stick and oil paint on canvas",
+      size: "200 × 150 cm",
+      year: 2023,
+      desc: "화면 전체를 채운 물건들의 더미. 오일 스틱의 굵은 선과 유화의 투명한 층이 교차하며 물건들의 무게와 밀도를 표현한다. A pile of accumulated objects fills the entire picture plane. Thick oil-stick line and transparent layers of oil paint alternate to convey weight and density."
+    },
+    {
+      title: "밤의 재고",
+      titleEn: "Night Inventory",
+      medium: "Ink and watercolour on paper",
+      size: "38 × 55 cm",
+      year: 2023,
+      desc: "밤에 방 안의 사물들을 목록 형식으로 드로잉한 작업. 세밀한 묘사보다는 각 사물의 실루엣과 위치 관계에 집중한다. A night-time drawing of objects in a room arranged as an inventory. The work focuses on silhouette and spatial relationship rather than minute description."
+    },
+    {
+      title: "선반",
+      titleEn: "Shelf",
+      medium: "Acrylic on canvas",
+      size: "91 × 72.7 cm",
+      year: 2022,
+      desc: "평범한 선반 위의 물건들을 아크릴 물감으로 묘사한 작품. 색의 단순화와 형태의 평탄화를 통해 사물의 존재감을 오히려 증폭시킨다. Everyday objects on a shelf rendered in acrylic. The simplification of colour and flattening of form paradoxically amplifies the presence of each object."
+    },
+    {
+      title: "사용 흔적",
+      titleEn: "Traces of Use",
+      medium: "Mixed media on paper",
+      size: "297 × 420 mm",
+      year: 2021,
+      desc: "오래 사용한 사물들의 표면에 남는 마모 흔적을 세밀하게 드로잉한 연작 중 하나. 연필, 볼펜, 먹 등 다양한 드로잉 재료가 혼합된다. One work from a series of drawings meticulously recording the wear marks left on surfaces of long-used objects. Pencil, ballpoint, and ink are combined."
+    },
+    {
+      title: "방의 목록 #3",
+      titleEn: "Catalogue of a Room #3",
+      medium: "Graphite on paper",
+      size: "59.4 × 84.1 cm",
+      year: 2020,
+      desc: "특정 방 안의 모든 사물을 흑연으로 목록화한 연작의 세 번째 작업. 공간적 배치를 따르지 않고 순수하게 목록의 형식으로 배열된 드로잉들이 새로운 공간감을 만든다. The third work in a series cataloguing all objects in a specific room in graphite. Arranged as pure list rather than by spatial position, the drawings generate a new sense of space."
+    },
+    {
+      title: "첫 번째 스튜디오",
+      titleEn: "First Studio",
+      medium: "Oil on canvas",
+      size: "145.5 × 112 cm",
+      year: 2018,
+      desc: "작가의 첫 번째 독립 스튜디오를 기억에 의지해 재현한 대형 유화. 정확성보다는 그 공간에서 느꼈던 감정과 분위기를 담는 데 중점을 둔다. A large oil painting reconstructing the artist's first independent studio from memory. The emphasis is on the feeling and atmosphere experienced there, rather than accuracy."
+    }
+  ];
+
+  function buildTable() {
+    var tbody = document.getElementById("works-body");
+    works.forEach(function(work, i) {
+      var idx = i + 1;
+
+      // Main row
+      var tr = document.createElement("tr");
+      tr.className = "work-row";
+      tr.setAttribute("data-index", i);
+      tr.setAttribute("aria-expanded", "false");
+      tr.innerHTML =
+        '<td class="col-index">' + idx + '</td>' +
+        '<td class="col-title">' + esc(work.title) +
+          (work.titleEn ? '<br /><span style="font-size:11px;color:#555;">' + esc(work.titleEn) + '</span>' : '') +
+        '</td>' +
+        '<td class="col-medium">' + esc(work.medium) + '</td>' +
+        '<td class="col-size">' + esc(work.size) + '</td>' +
+        '<td class="col-year">' + esc(String(work.year)) + '</td>';
+
+      // Detail row
+      var detail = document.createElement("tr");
+      detail.className = "detail-row";
+      detail.setAttribute("data-for", i);
+      detail.innerHTML =
+        '<td colspan="5">' +
+          '<div class="detail-inner">' +
+            '<p>' + esc(work.desc) + '</p>' +
+            '<p class="detail-meta">' +
+              esc(work.medium) + ' &mdash; ' + esc(work.size) + ' &mdash; ' + esc(String(work.year)) +
+            '</p>' +
+          '</div>' +
+        '</td>';
+
+      tr.addEventListener("click", function() {
+        var expanded = detail.classList.contains("open");
+        // Close all
+        document.querySelectorAll(".detail-row.open").forEach(function(d) {
+          d.classList.remove("open");
+          var forIdx = d.getAttribute("data-for");
+          var parentRow = document.querySelector('.work-row[data-index="' + forIdx + '"]');
+          if (parentRow) parentRow.setAttribute("aria-expanded", "false");
+        });
+        // Toggle this one
+        if (!expanded) {
+          detail.classList.add("open");
+          tr.setAttribute("aria-expanded", "true");
+        }
+      });
+
+      tbody.appendChild(tr);
+      tbody.appendChild(detail);
+    });
+  }
+
+  function esc(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+
+  function handleSubscribe(e) {
+    e.preventDefault();
+    var msg = document.getElementById("subscribe-msg");
+    var input = document.getElementById("email-input");
+    msg.textContent = "감사합니다. 구독이 완료되었습니다. / Thank you for subscribing.";
+    msg.style.display = "block";
+    input.value = "";
+    input.disabled = true;
+    document.querySelector("#mailing-form button").disabled = true;
+  }
+
+  buildTable();
+</script>
 </body>
 </html>
