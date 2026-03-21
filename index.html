@@ -5,8 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Lee Doyub</title>
   <style>
-    *, *::before, *::after {
-      box-sizing: border-box;
+    html, body {
       margin: 0;
       padding: 0;
     }
@@ -20,32 +19,25 @@
       margin: 8px;
     }
 
-    a {
-      color: #00f;
-    }
+    a { color: #00f; }
+    a:visited { color: #551a8b; }
 
-    a:visited {
-      color: #551a8b;
-    }
-
-    /* ── Page header ── */
+    /* ── Header ── */
     #page-header {
-      display: table;
-      width: 100%;
-      padding-bottom: 4px;
-      margin-bottom: 0;
+      margin-bottom: 2px;
+      white-space: nowrap;
     }
 
-    #header-left {
-      display: table-cell;
-      vertical-align: middle;
+    #site-name {
       font-size: 13px;
+      font-weight: normal;
+      display: inline;
     }
 
-    #header-right {
-      display: table-cell;
-      vertical-align: middle;
-      text-align: right;
+    /* spacer between name and search — fixed offset, not right-align */
+    #header-gap {
+      display: inline-block;
+      width: 300px;
     }
 
     #search-input {
@@ -55,6 +47,7 @@
       border-radius: 0;
       padding: 1px 4px;
       width: 200px;
+      vertical-align: baseline;
     }
 
     /* ── Works table ── */
@@ -64,7 +57,14 @@
       table-layout: fixed;
     }
 
+    #works-table colgroup col.col-index  { width: 30px; }
+    #works-table colgroup col.col-title  { width: auto; }
+    #works-table colgroup col.col-medium { width: 230px; }
+    #works-table colgroup col.col-size   { width: 120px; }
+    #works-table colgroup col.col-year   { width: 60px; }
+
     #works-table thead tr {
+      border-top: 1px solid #000;
       border-bottom: 1px solid #000;
     }
 
@@ -73,14 +73,18 @@
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 0.05em;
-      padding: 2px 6px;
+      padding: 1px 6px;
       text-align: left;
+      vertical-align: bottom;
     }
 
     #works-table thead th.col-index {
-      text-align: right;
+      text-align: left;
+      cursor: pointer;
+      user-select: none;
     }
 
+    /* data rows */
     #works-table tbody tr.work-row {
       cursor: pointer;
       border-bottom: 1px solid #ccc;
@@ -91,16 +95,19 @@
     }
 
     #works-table tbody tr.work-row td {
-      padding: 2px 6px;
+      padding: 1px 6px;
       vertical-align: top;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    #works-table tbody tr.work-row td.col-title {
+      white-space: normal;
     }
 
     #works-table tbody tr.work-row td.col-index {
-      text-align: right;
       color: #666;
-    }
-
-    #works-table tbody tr.work-row td.col-year {
       text-align: left;
     }
 
@@ -117,6 +124,7 @@
       padding: 8px 8px 12px 36px;
       background: #f9f9f9;
       border-bottom: 1px solid #000;
+      white-space: normal;
     }
 
     .detail-inner {
@@ -132,6 +140,11 @@
 
     /* ── Mobile ── */
     @media (max-width: 680px) {
+      #header-gap { width: 20px; }
+
+      #works-table colgroup col.col-medium,
+      #works-table colgroup col.col-size { width: 0; }
+
       #works-table thead th.col-medium,
       #works-table thead th.col-size,
       #works-table tbody td.col-medium,
@@ -144,27 +157,24 @@
 <body>
 
 <div id="page-header">
-  <div id="header-left">Lee Doyub</div>
-  <div id="header-right">
-    <input id="search-input" type="search" placeholder="Search" />
-  </div>
+  <span id="site-name">Lee Doyub</span><span id="header-gap"></span><input id="search-input" type="search" placeholder="Search" />
 </div>
 
 <table id="works-table">
   <colgroup>
-    <col style="width: 30px">
-    <col style="width: auto">
-    <col style="width: 220px">
-    <col style="width: 130px">
-    <col style="width: 50px">
+    <col class="col-index">
+    <col class="col-title">
+    <col class="col-medium">
+    <col class="col-size">
+    <col class="col-year">
   </colgroup>
   <thead>
     <tr>
-      <th class="col-index"></th>
+      <th class="col-index" id="sort-btn" title="Sort by year">&#9660;</th>
       <th class="col-title">Title</th>
       <th class="col-medium">Medium</th>
       <th class="col-size">Size</th>
-      <th class="col-year" style="text-align:left">Year</th>
+      <th class="col-year">Year</th>
     </tr>
   </thead>
   <tbody id="works-body"></tbody>
@@ -244,14 +254,29 @@
     }
   ];
 
+  var sortDesc = true; // default: newest first
   var allRows = [];
+
+  function esc(str) {
+    return str
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
 
   function buildTable() {
     var tbody = document.getElementById("works-body");
-    works.forEach(function(work, i) {
+    tbody.innerHTML = "";
+    allRows = [];
+
+    var sorted = works.slice().sort(function(a, b) {
+      return sortDesc ? b.year - a.year : a.year - b.year;
+    });
+
+    sorted.forEach(function(work, i) {
       var tr = document.createElement("tr");
       tr.className = "work-row";
-      tr.setAttribute("data-index", i);
       tr.innerHTML =
         '<td class="col-index">' + (i + 1) + '</td>' +
         '<td class="col-title">' + esc(work.title) + '</td>' +
@@ -276,9 +301,7 @@
         document.querySelectorAll(".detail-row.open").forEach(function(d) {
           d.classList.remove("open");
         });
-        if (!expanded) {
-          detail.classList.add("open");
-        }
+        if (!expanded) detail.classList.add("open");
       });
 
       tbody.appendChild(tr);
@@ -287,16 +310,20 @@
     });
   }
 
-  function esc(str) {
-    return str
-      .replace(/&/g, "&amp;")
-      .replace(/</g, "&lt;")
-      .replace(/>/g, "&gt;")
-      .replace(/"/g, "&quot;");
-  }
+  document.getElementById("sort-btn").addEventListener("click", function() {
+    sortDesc = !sortDesc;
+    this.innerHTML = sortDesc ? "&#9660;" : "&#9650;";
+    buildTable();
+    // re-apply search filter if active
+    var q = document.getElementById("search-input").value.toLowerCase();
+    if (q) filterRows(q);
+  });
 
   document.getElementById("search-input").addEventListener("input", function() {
-    var q = this.value.toLowerCase();
+    filterRows(this.value.toLowerCase());
+  });
+
+  function filterRows(q) {
     allRows.forEach(function(row) {
       var text = [row.work.title, row.work.medium, row.work.size, String(row.work.year)].join(" ").toLowerCase();
       var hide = q && text.indexOf(q) === -1;
@@ -304,7 +331,7 @@
       row.detail.style.display = hide ? "none" : "";
       if (hide) row.detail.classList.remove("open");
     });
-  });
+  }
 
   buildTable();
 </script>
