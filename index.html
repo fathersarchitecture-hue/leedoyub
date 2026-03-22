@@ -174,6 +174,66 @@
       margin-top: 5px;
     }
 
+    /* ── Thumbnail strip ── */
+    .img-thumb-strip {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+      margin-top: 8px;
+      margin-bottom: 8px;
+    }
+    .img-thumb-strip img {
+      width: 80px;
+      height: 80px;
+      object-fit: cover;
+      display: block;
+      cursor: pointer;
+    }
+
+    /* ── Lightbox ── */
+    #lightbox {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: #fff;
+      z-index: 500;
+      cursor: pointer;
+    }
+    #lightbox.open {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    #lb-img {
+      max-width: 700px;
+      max-height: 80vh;
+      display: block;
+      cursor: default;
+    }
+    #lb-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font: normal 16px Arial, Helvetica, sans-serif;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0;
+      line-height: 1;
+    }
+    #lb-prev, #lb-next {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font: normal 16px Arial, Helvetica, sans-serif;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 16px;
+    }
+    #lb-prev { left: 0; }
+    #lb-next { right: 0; }
+
   </style>
 </head>
 <body>
@@ -211,6 +271,14 @@
       </thead>
       <tbody id="works-body"></tbody>
     </table>
+
+<!-- Lightbox -->
+<div id="lightbox">
+  <button id="lb-close">&#215;</button>
+  <button id="lb-prev">&#8592;</button>
+  <button id="lb-next">&#8594;</button>
+  <img id="lb-img" src="" alt="" />
+</div>
 
 <script>
   var firebaseConfig = {
@@ -285,13 +353,27 @@
       detail.innerHTML =
         '<td colspan="5">' +
           '<div class="detail-inner">' +
-            (work.imageUrls && work.imageUrls.length ? '<div style="margin-top:8px">' + work.imageUrls.map(function(url) { return '<img src="' + esc(url) + '" alt="' + esc(work.title) + '" style="max-width:400px;margin-right:8px;display:inline-block;vertical-align:top">'; }).join("") + '</div>' : '') +
+            '<div class="img-thumb-strip"></div>' +
             '<div>' + esc(work.description) + '</div>' +
             '<div class="detail-meta">' +
               esc(work.medium) + ' &mdash; ' + esc(work.size) + ' &mdash; ' + esc(String(work.year)) +
             '</div>' +
           '</div>' +
         '</td>';
+
+      if (work.imageUrls && work.imageUrls.length) {
+        var strip = detail.querySelector(".img-thumb-strip");
+        work.imageUrls.forEach(function(url, idx) {
+          var img = document.createElement("img");
+          img.src = url;
+          img.alt = work.title;
+          img.addEventListener("click", function(e) {
+            e.stopPropagation();
+            openLightbox(work.imageUrls, idx);
+          });
+          strip.appendChild(img);
+        });
+      }
 
       tr.addEventListener("click", function() {
         detail.classList.toggle("open");
@@ -394,6 +476,49 @@
       });
       document.getElementById("sb-upcoming").innerHTML = html;
     }
+  });
+
+  // ── Lightbox ─────────────────────────────────────────────────────────────────
+  var lbUrls = [];
+  var lbIdx  = 0;
+
+  function openLightbox(urls, idx) {
+    lbUrls = urls;
+    lbIdx  = idx;
+    document.getElementById("lb-img").src = urls[idx];
+    updateLbNav();
+    document.getElementById("lightbox").classList.add("open");
+  }
+
+  function closeLightbox() {
+    document.getElementById("lightbox").classList.remove("open");
+    document.getElementById("lb-img").src = "";
+  }
+
+  function updateLbNav() {
+    document.getElementById("lb-prev").style.visibility = lbIdx > 0 ? "visible" : "hidden";
+    document.getElementById("lb-next").style.visibility = lbIdx < lbUrls.length - 1 ? "visible" : "hidden";
+  }
+
+  document.getElementById("lightbox").addEventListener("click", function(e) {
+    if (e.target === this) closeLightbox();
+  });
+  document.getElementById("lb-close").addEventListener("click", function(e) {
+    e.stopPropagation(); closeLightbox();
+  });
+  document.getElementById("lb-prev").addEventListener("click", function(e) {
+    e.stopPropagation();
+    if (lbIdx > 0) { lbIdx--; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
+  });
+  document.getElementById("lb-next").addEventListener("click", function(e) {
+    e.stopPropagation();
+    if (lbIdx < lbUrls.length - 1) { lbIdx++; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
+  });
+  document.addEventListener("keydown", function(e) {
+    if (!document.getElementById("lightbox").classList.contains("open")) return;
+    if (e.key === "Escape") { closeLightbox(); }
+    else if (e.key === "ArrowLeft"  && lbIdx > 0)                  { lbIdx--; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
+    else if (e.key === "ArrowRight" && lbIdx < lbUrls.length - 1)  { lbIdx++; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
   });
 
   // Load works from Firestore
