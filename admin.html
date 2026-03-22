@@ -208,6 +208,25 @@
     #form-error { color: red; font-size: 11px; margin-top: 6px; }
 
     button[type="submit"] { font-weight: bold; }
+
+    @media (max-width: 680px) {
+      /* Save Profile button row */
+      #profile-form > div[style*="margin-top:10px"] {
+        display: block !important;
+        margin-top: 12px;
+      }
+
+      /* Work form modal: scrollable, capped height */
+      #form-overlay.open {
+        align-items: flex-start;
+        overflow-y: auto;
+        padding: 20px 0;
+      }
+      #work-form-wrap {
+        max-height: 90vh;
+        overflow-y: auto;
+      }
+    }
   </style>
 </head>
 <body>
