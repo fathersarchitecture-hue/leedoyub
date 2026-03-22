@@ -4,6 +4,31 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=1200, initial-scale=0.5" />
   <title>Admin — Lee Doyub</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    /* ── Flatpickr overrides ── */
+    .flatpickr-calendar {
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 12px;
+      border-radius: 0;
+      border: 1px solid #ccc;
+      box-shadow: none;
+    }
+    .flatpickr-day.selected,
+    .flatpickr-day.selected:hover {
+      background: #000;
+      border-color: #000;
+      border-radius: 0;
+    }
+    .flatpickr-day:hover {
+      border-radius: 0;
+      background: #f4f4f4;
+    }
+    .flatpickr-day.today { border-color: #ccc; }
+    .flatpickr-months .flatpickr-month,
+    .flatpickr-current-month,
+    .flatpickr-weekday { font-family: Arial, Helvetica, sans-serif; font-size: 12px; }
+  </style>
   <style>
     * { margin: 0; padding: 0; }
     body {
@@ -92,7 +117,8 @@
       box-sizing: border-box;
     }
     .upcoming-row .inp-title     { width: 200px; }
-    .upcoming-row .inp-daterange { width: 160px; }
+    .upcoming-row .inp-date-from,
+    .upcoming-row .inp-date-to   { width: 96px; }
     .upcoming-row .inp-venue     { width: 200px; }
 
     .btn-small {
@@ -375,6 +401,7 @@
   </div>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <!-- Firebase SDKs -->
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
@@ -446,17 +473,36 @@
   }
 
   function addUpcomingRow(title, dateRange, venue) {
+    // Parse existing "DD.MM.YYYY — DD.MM.YYYY" back into two parts
+    var fromVal = "", toVal = "";
+    if (dateRange) {
+      var parts = dateRange.split(" \u2014 ");
+      fromVal = parts[0] ? parts[0].trim() : "";
+      toVal   = parts[1] ? parts[1].trim() : "";
+    }
+
     var row = document.createElement("div");
     row.className = "upcoming-row";
     row.innerHTML =
       '<input type="text" class="inp-title" placeholder="Title" value="' + esc(title || "") + '" />' +
-      '<input type="text" class="inp-daterange" placeholder="Date range" value="' + esc(dateRange || "") + '" />' +
+      '<input type="text" class="inp-date-from" placeholder="From" readonly />' +
+      '<input type="text" class="inp-date-to" placeholder="To" readonly />' +
       '<input type="text" class="inp-venue" placeholder="Venue" value="' + esc(venue || "") + '" />' +
       '<button type="button" class="btn-small del">Remove</button>';
+
     row.querySelector(".del").addEventListener("click", function() {
       row.parentNode.removeChild(row);
     });
     document.getElementById("upcoming-list").appendChild(row);
+
+    flatpickr(row.querySelector(".inp-date-from"), {
+      dateFormat: "d.m.Y",
+      defaultDate: fromVal || null
+    });
+    flatpickr(row.querySelector(".inp-date-to"), {
+      dateFormat: "d.m.Y",
+      defaultDate: toVal || null
+    });
   }
 
   document.getElementById("btn-add-upcoming").addEventListener("click", function() {
@@ -470,9 +516,12 @@
 
     var upcoming = [];
     document.querySelectorAll("#upcoming-list .upcoming-row").forEach(function(row) {
+      var from = row.querySelector(".inp-date-from").value.trim();
+      var to   = row.querySelector(".inp-date-to").value.trim();
+      var dateRange = (from && to) ? from + " \u2014 " + to : (from || to);
       upcoming.push({
         title:     row.querySelector(".inp-title").value.trim(),
-        dateRange: row.querySelector(".inp-daterange").value.trim(),
+        dateRange: dateRange,
         venue:     row.querySelector(".inp-venue").value.trim()
       });
     });
