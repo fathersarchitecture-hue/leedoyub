@@ -180,59 +180,33 @@
       flex-wrap: wrap;
       gap: 4px;
       margin-top: 8px;
-      margin-bottom: 8px;
+      margin-bottom: 4px;
     }
     .img-thumb-strip img {
-      width: 80px;
-      height: 80px;
+      width: 60px;
+      height: 60px;
       object-fit: cover;
       display: block;
       cursor: pointer;
     }
+    .img-thumb-strip img.active { outline: 1px solid #aaa; }
 
-    /* ── Lightbox ── */
-    #lightbox {
+    /* ── Inline expanded image ── */
+    .img-expanded {
       display: none;
-      position: fixed;
-      inset: 0;
-      background: #fff;
-      z-index: 500;
-      cursor: pointer;
+      margin-top: 8px;
     }
-    #lightbox.open {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-    #lb-img {
-      max-width: 700px;
-      max-height: 80vh;
+    .img-expanded.open { display: block; }
+    .img-expanded img {
+      max-width: 600px;
       display: block;
-      cursor: default;
+      margin: 0;
     }
-    #lb-close {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font: normal 16px Arial, Helvetica, sans-serif;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0;
-      line-height: 1;
+    .img-expanded-caption {
+      font-size: 11px;
+      color: #555;
+      margin-top: 5px;
     }
-    #lb-prev, #lb-next {
-      position: absolute;
-      top: 50%;
-      transform: translateY(-50%);
-      font: normal 16px Arial, Helvetica, sans-serif;
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0 16px;
-    }
-    #lb-prev { left: 0; }
-    #lb-next { right: 0; }
 
   </style>
 </head>
@@ -271,14 +245,6 @@
       </thead>
       <tbody id="works-body"></tbody>
     </table>
-
-<!-- Lightbox -->
-<div id="lightbox">
-  <button id="lb-close">&#215;</button>
-  <button id="lb-prev">&#8592;</button>
-  <button id="lb-next">&#8594;</button>
-  <img id="lb-img" src="" alt="" />
-</div>
 
 <script>
   var firebaseConfig = {
@@ -350,33 +316,54 @@
 
       var detail = document.createElement("tr");
       detail.className = "detail-row";
+      var caption = esc(work.medium) + ' &mdash; ' + esc(work.size) + ' &mdash; ' + esc(String(work.year));
       detail.innerHTML =
         '<td colspan="5">' +
           '<div class="detail-inner">' +
             '<div class="img-thumb-strip"></div>' +
-            '<div>' + esc(work.description) + '</div>' +
-            '<div class="detail-meta">' +
-              esc(work.medium) + ' &mdash; ' + esc(work.size) + ' &mdash; ' + esc(String(work.year)) +
+            '<div class="img-expanded">' +
+              '<img src="" alt="' + esc(work.title) + '" />' +
+              '<div class="img-expanded-caption">' + esc(work.title) + ' &mdash; ' + caption + '</div>' +
             '</div>' +
+            '<div>' + esc(work.description) + '</div>' +
+            '<div class="detail-meta">' + caption + '</div>' +
           '</div>' +
         '</td>';
 
       if (work.imageUrls && work.imageUrls.length) {
-        var strip = detail.querySelector(".img-thumb-strip");
+        var strip    = detail.querySelector(".img-thumb-strip");
+        var expanded = detail.querySelector(".img-expanded");
+        var bigImg   = expanded.querySelector("img");
+
         work.imageUrls.forEach(function(url, idx) {
-          var img = document.createElement("img");
-          img.src = url;
-          img.alt = work.title;
-          img.addEventListener("click", function(e) {
+          var thumb = document.createElement("img");
+          thumb.src = url;
+          thumb.alt = work.title;
+          thumb.addEventListener("click", function(e) {
             e.stopPropagation();
-            openLightbox(work.imageUrls, idx);
+            var alreadyOpen = expanded.classList.contains("open") && bigImg.src === url;
+            // Deactivate all thumbs
+            strip.querySelectorAll("img").forEach(function(t) { t.classList.remove("active"); });
+            if (alreadyOpen) {
+              expanded.classList.remove("open");
+            } else {
+              bigImg.src = url;
+              expanded.classList.add("open");
+              thumb.classList.add("active");
+            }
           });
-          strip.appendChild(img);
+          strip.appendChild(thumb);
         });
       }
 
       tr.addEventListener("click", function() {
         detail.classList.toggle("open");
+        if (!detail.classList.contains("open")) {
+          var exp = detail.querySelector(".img-expanded");
+          if (exp) { exp.classList.remove("open"); }
+          var thumbs = detail.querySelectorAll(".img-thumb-strip img");
+          thumbs.forEach(function(t) { t.classList.remove("active"); });
+        }
       });
 
       tr.querySelector("td.col-size").addEventListener("click", function(e) {
@@ -476,49 +463,6 @@
       });
       document.getElementById("sb-upcoming").innerHTML = html;
     }
-  });
-
-  // ── Lightbox ─────────────────────────────────────────────────────────────────
-  var lbUrls = [];
-  var lbIdx  = 0;
-
-  function openLightbox(urls, idx) {
-    lbUrls = urls;
-    lbIdx  = idx;
-    document.getElementById("lb-img").src = urls[idx];
-    updateLbNav();
-    document.getElementById("lightbox").classList.add("open");
-  }
-
-  function closeLightbox() {
-    document.getElementById("lightbox").classList.remove("open");
-    document.getElementById("lb-img").src = "";
-  }
-
-  function updateLbNav() {
-    document.getElementById("lb-prev").style.visibility = lbIdx > 0 ? "visible" : "hidden";
-    document.getElementById("lb-next").style.visibility = lbIdx < lbUrls.length - 1 ? "visible" : "hidden";
-  }
-
-  document.getElementById("lightbox").addEventListener("click", function(e) {
-    if (e.target === this) closeLightbox();
-  });
-  document.getElementById("lb-close").addEventListener("click", function(e) {
-    e.stopPropagation(); closeLightbox();
-  });
-  document.getElementById("lb-prev").addEventListener("click", function(e) {
-    e.stopPropagation();
-    if (lbIdx > 0) { lbIdx--; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
-  });
-  document.getElementById("lb-next").addEventListener("click", function(e) {
-    e.stopPropagation();
-    if (lbIdx < lbUrls.length - 1) { lbIdx++; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
-  });
-  document.addEventListener("keydown", function(e) {
-    if (!document.getElementById("lightbox").classList.contains("open")) return;
-    if (e.key === "Escape") { closeLightbox(); }
-    else if (e.key === "ArrowLeft"  && lbIdx > 0)                  { lbIdx--; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
-    else if (e.key === "ArrowRight" && lbIdx < lbUrls.length - 1)  { lbIdx++; document.getElementById("lb-img").src = lbUrls[lbIdx]; updateLbNav(); }
   });
 
   // Load works from Firestore
