@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=1200, initial-scale=0.5" />
+  <title>Admin — Lee Doyub</title>
+  <style>
+    * { margin: 0; padding: 0; }
+    body {
+      font: normal 12px / 1.4em Arial, Helvetica, sans-serif;
+      color: #000;
+      margin: 8px;
+      background: #fff;
+    }
+    a { color: #00f; }
+
+    /* ── Header ── */
+    #page-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 0;
+      border-bottom: 1px solid #f4f4f4;
+      margin-bottom: 12px;
+    }
+    #site-name {
+      font-size: 12px;
+      font-weight: bold;
+    }
+    #btn-logout {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      background: none;
+      border: 1px solid #ccc;
+      padding: 2px 8px;
+      cursor: pointer;
+    }
+    #btn-logout:hover { background: #f4f4f4; }
+
+    /* ── Login ── */
+    #login-section {
+      max-width: 320px;
+      margin: 60px auto 0;
+    }
+    #login-section h2 {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 12px;
+    }
+    .field { margin-bottom: 8px; }
+    .field label { display: block; margin-bottom: 2px; }
+    .field input[type="email"],
+    .field input[type="password"] {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      padding: 3px 5px;
+      height: 22px;
+    }
+    #login-error { color: red; margin-top: 6px; font-size: 11px; }
+
+    /* ── Admin panel ── */
+    #admin-section { display: none; }
+
+    #btn-add {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      background: none;
+      border: 1px solid #ccc;
+      padding: 2px 8px;
+      cursor: pointer;
+      margin-bottom: 10px;
+    }
+    #btn-add:hover { background: #f4f4f4; }
+
+    /* ── Works table ── */
+    #works-table {
+      width: 100%;
+      border-collapse: collapse;
+      table-layout: fixed;
+    }
+    #works-table colgroup col.col-title  { width: 30%; }
+    #works-table colgroup col.col-medium { width: auto; }
+    #works-table colgroup col.col-size   { width: 120px; }
+    #works-table colgroup col.col-year   { width: 55px; }
+    #works-table colgroup col.col-actions { width: 100px; }
+
+    #works-table thead tr {
+      border-top: 1px solid #f4f4f4;
+      border-bottom: 1px solid #f4f4f4;
+    }
+    #works-table thead th {
+      font-size: 11px;
+      font-weight: bold;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 2px 6px;
+      text-align: left;
+    }
+    #works-table tbody tr {
+      border-bottom: 1px solid #f4f4f4;
+    }
+    #works-table tbody td {
+      padding: 2px 6px;
+      vertical-align: top;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    #works-table tbody td.col-title,
+    #works-table tbody td.col-medium { white-space: normal; }
+
+    .btn-action {
+      font: normal 11px Arial, Helvetica, sans-serif;
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0 4px 0 0;
+      color: #00f;
+      text-decoration: underline;
+    }
+    .btn-action:hover { color: #551a8b; }
+    .btn-action.del { color: #900; }
+    .btn-action.del:hover { color: #f00; }
+
+    /* ── Form overlay ── */
+    #form-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      z-index: 100;
+    }
+    #form-overlay.open { display: flex; align-items: center; justify-content: center; }
+
+    #work-form-wrap {
+      background: #fff;
+      padding: 20px 24px;
+      width: 480px;
+      max-width: 96vw;
+      box-sizing: border-box;
+    }
+    #work-form-wrap h2 {
+      font-size: 12px;
+      font-weight: bold;
+      margin-bottom: 14px;
+    }
+    #work-form .field input[type="text"],
+    #work-form .field input[type="number"],
+    #work-form .field textarea {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #ccc;
+      padding: 3px 5px;
+    }
+    #work-form .field textarea {
+      height: 80px;
+      resize: vertical;
+    }
+    #form-actions { margin-top: 14px; display: flex; gap: 8px; }
+    #form-actions button {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      border: 1px solid #ccc;
+      background: none;
+      padding: 3px 12px;
+      cursor: pointer;
+    }
+    #form-actions button:hover { background: #f4f4f4; }
+    #form-error { color: red; font-size: 11px; margin-top: 6px; }
+
+    button[type="submit"] { font-weight: bold; }
+  </style>
+</head>
+<body>
+
+<div id="page-header">
+  <span id="site-name">Lee Doyub — Admin</span>
+  <button id="btn-logout" style="display:none">Logout</button>
+</div>
+
+<!-- Login -->
+<div id="login-section">
+  <h2>Sign in</h2>
+  <form id="login-form">
+    <div class="field">
+      <label for="input-email">Email</label>
+      <input id="input-email" type="email" required autocomplete="username" />
+    </div>
+    <div class="field">
+      <label for="input-password">Password</label>
+      <input id="input-password" type="password" required autocomplete="current-password" />
+    </div>
+    <div class="field">
+      <button type="submit">Sign in</button>
+    </div>
+    <div id="login-error"></div>
+  </form>
+</div>
+
+<!-- Admin panel -->
+<div id="admin-section">
+  <button id="btn-add">+ Add work</button>
+  <table id="works-table">
+    <colgroup>
+      <col class="col-title">
+      <col class="col-medium">
+      <col class="col-size">
+      <col class="col-year">
+      <col class="col-actions">
+    </colgroup>
+    <thead>
+      <tr>
+        <th class="col-title">Title</th>
+        <th class="col-medium">Medium</th>
+        <th class="col-size">Size</th>
+        <th class="col-year">Year</th>
+        <th class="col-actions"></th>
+      </tr>
+    </thead>
+    <tbody id="works-body"></tbody>
+  </table>
+</div>
+
+<!-- Add / Edit form overlay -->
+<div id="form-overlay">
+  <div id="work-form-wrap">
+    <h2 id="form-title">Add work</h2>
+    <form id="work-form">
+      <div class="field">
+        <label for="f-title">Title</label>
+        <input id="f-title" type="text" required />
+      </div>
+      <div class="field">
+        <label for="f-medium">Medium</label>
+        <input id="f-medium" type="text" required />
+      </div>
+      <div class="field">
+        <label for="f-size">Size</label>
+        <input id="f-size" type="text" required />
+      </div>
+      <div class="field">
+        <label for="f-year">Year</label>
+        <input id="f-year" type="number" required min="1900" max="2100" />
+      </div>
+      <div class="field">
+        <label for="f-description">Description</label>
+        <textarea id="f-description" required></textarea>
+      </div>
+      <div id="form-error"></div>
+      <div id="form-actions">
+        <button type="submit" id="btn-save">Save</button>
+        <button type="button" id="btn-cancel">Cancel</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
+
+<script>
+  var firebaseConfig = {
+    apiKey: "AIzaSyDz7i5kALzgRrRFb-VkmpSlmGxnGJgxXp4",
+    authDomain: "leedoyub-7224c.firebaseapp.com",
+    projectId: "leedoyub-7224c",
+    storageBucket: "leedoyub-7224c.firebasestorage.app",
+    messagingSenderId: "49544284283",
+    appId: "1:49544284283:web:7961d405632e375e7fbade"
+  };
+
+  firebase.initializeApp(firebaseConfig);
+  var auth = firebase.auth();
+  var db = firebase.firestore();
+
+  var editingId = null;
+
+  // ── Auth state ──────────────────────────────────────────────────────────────
+  auth.onAuthStateChanged(function(user) {
+    if (user) {
+      document.getElementById("login-section").style.display = "none";
+      document.getElementById("admin-section").style.display = "block";
+      document.getElementById("btn-logout").style.display = "";
+      loadWorks();
+    } else {
+      document.getElementById("login-section").style.display = "";
+      document.getElementById("admin-section").style.display = "none";
+      document.getElementById("btn-logout").style.display = "none";
+    }
+  });
+
+  // ── Login ───────────────────────────────────────────────────────────────────
+  document.getElementById("login-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    var email = document.getElementById("input-email").value;
+    var password = document.getElementById("input-password").value;
+    document.getElementById("login-error").textContent = "";
+    auth.signInWithEmailAndPassword(email, password).catch(function(err) {
+      document.getElementById("login-error").textContent = err.message;
+    });
+  });
+
+  document.getElementById("btn-logout").addEventListener("click", function() {
+    auth.signOut();
+  });
+
+  // ── Load works ──────────────────────────────────────────────────────────────
+  function loadWorks() {
+    db.collection("works").orderBy("year", "desc").get().then(function(snapshot) {
+      var tbody = document.getElementById("works-body");
+      tbody.innerHTML = "";
+      snapshot.forEach(function(doc) {
+        var d = doc.data();
+        var tr = document.createElement("tr");
+        tr.innerHTML =
+          '<td class="col-title">' + esc(d.title || "") + '</td>' +
+          '<td class="col-medium">' + esc(d.medium || "") + '</td>' +
+          '<td class="col-size">' + esc(d.size || "") + '</td>' +
+          '<td class="col-year">' + esc(String(d.year || "")) + '</td>' +
+          '<td class="col-actions">' +
+            '<button class="btn-action edit-btn" data-id="' + doc.id + '">Edit</button>' +
+            '<button class="btn-action del delete-btn" data-id="' + doc.id + '">Delete</button>' +
+          '</td>';
+        tbody.appendChild(tr);
+      });
+
+      tbody.querySelectorAll(".edit-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() { openEdit(this.dataset.id); });
+      });
+      tbody.querySelectorAll(".delete-btn").forEach(function(btn) {
+        btn.addEventListener("click", function() { deleteWork(this.dataset.id); });
+      });
+    });
+  }
+
+  // ── Add / Edit form ─────────────────────────────────────────────────────────
+  document.getElementById("btn-add").addEventListener("click", function() {
+    editingId = null;
+    document.getElementById("form-title").textContent = "Add work";
+    document.getElementById("work-form").reset();
+    document.getElementById("form-error").textContent = "";
+    document.getElementById("form-overlay").classList.add("open");
+  });
+
+  document.getElementById("btn-cancel").addEventListener("click", closeForm);
+
+  document.getElementById("form-overlay").addEventListener("click", function(e) {
+    if (e.target === this) closeForm();
+  });
+
+  function closeForm() {
+    document.getElementById("form-overlay").classList.remove("open");
+    editingId = null;
+  }
+
+  function openEdit(id) {
+    db.collection("works").doc(id).get().then(function(doc) {
+      if (!doc.exists) return;
+      var d = doc.data();
+      editingId = id;
+      document.getElementById("form-title").textContent = "Edit work";
+      document.getElementById("f-title").value = d.title || "";
+      document.getElementById("f-medium").value = d.medium || "";
+      document.getElementById("f-size").value = d.size || "";
+      document.getElementById("f-year").value = d.year || "";
+      document.getElementById("f-description").value = d.description || "";
+      document.getElementById("form-error").textContent = "";
+      document.getElementById("form-overlay").classList.add("open");
+    });
+  }
+
+  document.getElementById("work-form").addEventListener("submit", function(e) {
+    e.preventDefault();
+    var data = {
+      title: document.getElementById("f-title").value.trim(),
+      medium: document.getElementById("f-medium").value.trim(),
+      size: document.getElementById("f-size").value.trim(),
+      year: parseInt(document.getElementById("f-year").value, 10),
+      description: document.getElementById("f-description").value.trim()
+    };
+    document.getElementById("form-error").textContent = "";
+    var promise = editingId
+      ? db.collection("works").doc(editingId).set(data)
+      : db.collection("works").add(data);
+    promise.then(function() {
+      closeForm();
+      loadWorks();
+    }).catch(function(err) {
+      document.getElementById("form-error").textContent = err.message;
+    });
+  });
+
+  // ── Delete ──────────────────────────────────────────────────────────────────
+  function deleteWork(id) {
+    if (!confirm("Delete this work?")) return;
+    db.collection("works").doc(id).delete().then(function() {
+      loadWorks();
+    }).catch(function(err) {
+      alert("Error: " + err.message);
+    });
+  }
+
+  // ── Util ────────────────────────────────────────────────────────────────────
+  function esc(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;");
+  }
+</script>
+</body>
+</html>

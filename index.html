@@ -177,6 +177,9 @@
   </style>
 </head>
 <body>
+<!-- Firebase SDKs -->
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-firestore-compat.js"></script>
 
 <div id="page-header">
   <span id="header-index-spacer"></span><span id="site-name-wrap"><a id="site-name" href="#" onclick="toggleSidebar(event)">Lee Doyub</a></span><input id="search-input" type="search" placeholder="Search" />
@@ -222,101 +225,24 @@
     </table>
 
 <script>
-  var works = [
-    {
-      title: "On What Remains",
-      titleKo: "남겨진 것들에 대하여",
-      medium: "Oil on canvas",
-      size: "162 × 130 cm",
-      year: 2025,
-      desc: "A large canvas built up in successive layers of oil paint that visualize sediment and time. The absence of figures and the residue of objects fill the picture plane, prompting the viewer to imagine presences that are no longer there."
-    },
-    {
-      title: "Untitled (Kitchen)",
-      titleKo: "무제 (부엌)",
-      medium: "Acrylic and graphite on linen",
-      size: "80 × 100 cm",
-      year: 2025,
-      desc: "The most mundane domestic space — a kitchen — is re-drawn with graphite line and acrylic wash. The placement of tools and angle of light suggest a specific hour without providing a definitive narrative."
-    },
-    {
-      title: "Fold Marks",
-      titleKo: "접힌 자국",
-      medium: "Charcoal on paper",
-      size: "120 × 90 cm",
-      year: 2024,
-      desc: "A drawing that emphasises and re-composes the crease marks left after paper is folded and unfolded many times. The fold itself functions as a painterly act."
-    },
-    {
-      title: "Window, 3 p.m.",
-      titleKo: "창문, 오후 세 시",
-      medium: "Oil on canvas",
-      size: "53 × 45.5 cm",
-      year: 2024,
-      desc: "A small painting recording how light passes through a window at a specific 3 p.m. Completed quickly, it attempts to fix an immediate sensory experience onto canvas."
-    },
-    {
-      title: "Pile",
-      titleKo: "더미",
-      medium: "Oil stick and oil paint on canvas",
-      size: "200 × 150 cm",
-      year: 2023,
-      desc: "A pile of accumulated objects fills the entire picture plane. Thick oil-stick line and transparent layers of oil paint alternate to convey weight and density."
-    },
-    {
-      title: "Night Inventory",
-      titleKo: "밤의 재고",
-      medium: "Ink and watercolour on paper",
-      size: "38 × 55 cm",
-      year: 2023,
-      desc: "A night-time drawing of objects in a room arranged as an inventory. The work focuses on silhouette and spatial relationship rather than minute description."
-    },
-    {
-      title: "Shelf",
-      titleKo: "선반",
-      medium: "Acrylic on canvas",
-      size: "91 × 72.7 cm",
-      year: 2022,
-      desc: "Everyday objects on a shelf rendered in acrylic. The simplification of colour and flattening of form paradoxically amplifies the presence of each object."
-    },
-    {
-      title: "Traces of Use",
-      titleKo: "사용 흔적",
-      medium: "Mixed media on paper",
-      size: "297 × 420 mm",
-      year: 2021,
-      desc: "One work from a series of drawings meticulously recording the wear marks left on surfaces of long-used objects. Pencil, ballpoint, and ink are combined."
-    },
-    {
-      title: "Catalogue of a Room #3",
-      titleKo: "방의 목록 #3",
-      medium: "Graphite on paper",
-      size: "59.4 × 84.1 cm",
-      year: 2020,
-      desc: "The third work in a series cataloguing all objects in a specific room in graphite. Arranged as a pure list rather than by spatial position, the drawings generate a new sense of space."
-    },
-    {
-      title: "First Studio",
-      titleKo: "첫 번째 스튜디오",
-      medium: "Oil on canvas",
-      size: "145.5 × 112 cm",
-      year: 2018,
-      desc: "A large oil painting reconstructing the artist's first independent studio from memory. The emphasis is on the feeling and atmosphere experienced there, rather than accuracy."
-    }
-  ];
+  var firebaseConfig = {
+    apiKey: "AIzaSyDz7i5kALzgRrRFb-VkmpSlmGxnGJgxXp4",
+    authDomain: "leedoyub-7224c.firebaseapp.com",
+    projectId: "leedoyub-7224c",
+    storageBucket: "leedoyub-7224c.firebasestorage.app",
+    messagingSenderId: "49544284283",
+    appId: "1:49544284283:web:7961d405632e375e7fbade"
+  };
+  firebase.initializeApp(firebaseConfig);
+  var db = firebase.firestore();
 
-  works.forEach(function(w, i) { w.idx = i; });
-
-  // yearRank: 1 = oldest year, N = newest year
-  var byYear = works.slice().sort(function(a, b) { return a.year - b.year; });
-  byYear.forEach(function(w, i) { w.yearRank = i + 1; });
-
+  var works = [];
   var sortCol = "yearRank";
   var sortDesc = true;
   var allRows = [];
 
   function esc(str) {
-    return str
+    return String(str)
       .replace(/&/g, "&amp;")
       .replace(/</g, "&lt;")
       .replace(/>/g, "&gt;")
@@ -349,14 +275,14 @@
       if (sortCol === "yearRank" || sortCol === "year") {
         cmp = a[sortCol] - b[sortCol];
       } else {
-        var av = a[sortCol].toLowerCase();
-        var bv = b[sortCol].toLowerCase();
+        var av = (a[sortCol] || "").toLowerCase();
+        var bv = (b[sortCol] || "").toLowerCase();
         cmp = av < bv ? -1 : av > bv ? 1 : 0;
       }
       return sortDesc ? -cmp : cmp;
     });
 
-    sorted.forEach(function(work, i) {
+    sorted.forEach(function(work) {
       var tr = document.createElement("tr");
       tr.className = "work-row";
       tr.innerHTML =
@@ -371,7 +297,7 @@
       detail.innerHTML =
         '<td colspan="5">' +
           '<div class="detail-inner">' +
-            '<div>' + esc(work.desc) + '</div>' +
+            '<div>' + esc(work.description) + '</div>' +
             '<div class="detail-meta">' +
               esc(work.medium) + ' &mdash; ' + esc(work.size) + ' &mdash; ' + esc(String(work.year)) +
             '</div>' +
@@ -388,7 +314,7 @@
         if (td.dataset.unit === "cm") {
           var orig = td.dataset.cm;
           var unit, mult;
-          if (/mm/.test(orig))       { unit = "mm"; mult = 1 / 25.4; }
+          if (/mm/.test(orig))         { unit = "mm"; mult = 1 / 25.4; }
           else if (/\bm\b/.test(orig)) { unit = "m";  mult = 39.3701; }
           else                         { unit = "cm"; mult = 1 / 2.54; }
           var converted = orig
@@ -440,7 +366,28 @@
     });
   }
 
-  buildTable();
+  // Load works from Firestore
+  db.collection("works").get().then(function(snapshot) {
+    works = [];
+    snapshot.forEach(function(doc) {
+      var d = doc.data();
+      works.push({
+        id: doc.id,
+        title: d.title || "",
+        medium: d.medium || "",
+        size: d.size || "",
+        year: d.year || 0,
+        description: d.description || ""
+      });
+    });
+
+    // Assign yearRank: 1 = oldest, N = newest
+    var byYear = works.slice().sort(function(a, b) { return a.year - b.year; });
+    byYear.forEach(function(w, i) { w.yearRank = i + 1; });
+
+    buildTable();
+    updateHeaders();
+  });
 </script>
 </body>
 </html>
