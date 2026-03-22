@@ -88,6 +88,7 @@
       padding: 2px 0;
       margin-bottom: 10px;
     }
+    .admin-section-heading.collapsible { cursor: pointer; user-select: none; }
     .admin-section-wrap { margin-bottom: 24px; }
 
     /* ── Profile form ── */
@@ -302,7 +303,8 @@
 
   <!-- Profile -->
   <div class="admin-section-wrap">
-    <div class="admin-section-heading">Profile</div>
+    <div class="admin-section-heading collapsible" id="profile-heading">Profile &#9660;</div>
+    <div id="profile-body">
     <form id="profile-form">
       <div class="field" style="margin-bottom:8px">
         <label for="p-bio">Bio</label>
@@ -331,6 +333,7 @@
         <span id="profile-error"></span>
       </div>
     </form>
+    </div>
   </div>
 
   <!-- Works -->
@@ -686,6 +689,14 @@
       alert("Error: " + err.message);
     });
   }
+
+  // ── Profile section toggle ──────────────────────────────────────────────────
+  document.getElementById("profile-heading").addEventListener("click", function() {
+    var body = document.getElementById("profile-body");
+    var open = body.style.display !== "none";
+    body.style.display = open ? "none" : "block";
+    this.innerHTML = open ? "Profile &#9658;" : "Profile &#9660;";
+  });
 
   // ── Util ────────────────────────────────────────────────────────────────────
   function esc(str) {
