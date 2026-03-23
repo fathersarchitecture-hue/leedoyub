@@ -236,10 +236,8 @@
       #works-table colgroup col.col-index { width: 28px; }
       #works-table colgroup col.col-year  { width: 36px; }
 
-      #works-table thead th.col-medium,
-      #works-table thead th.col-size,
-      #works-table tbody td.col-medium,
-      #works-table tbody td.col-size { display: none; }
+      #works-table-wrap { overflow-x: auto; }
+      #works-table { min-width: 600px; }
 
       #works-table thead th,
       #works-table tbody td { padding: 2px 3px; font-size: 12px; }
@@ -274,7 +272,7 @@
   <div class="sb-section" id="sb-upcoming"></div>
 </div>
 
-<table id="works-table">
+<div id="works-table-wrap"><table id="works-table">
       <colgroup>
         <col class="col-index">
         <col class="col-title">
@@ -292,7 +290,7 @@
         </tr>
       </thead>
       <tbody id="works-body"></tbody>
-    </table>
+    </table></div>
 
 <script>
   var firebaseConfig = {
