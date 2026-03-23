@@ -103,6 +103,24 @@
     #profile-form .field input[type="text"] { width: 320px; height: 22px; }
     #profile-form .field textarea { width: 560px; height: 70px; resize: vertical; }
 
+    /* ── Other links list ── */
+    #other-links-list { margin-bottom: 8px; }
+    .other-link-row {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    .other-link-row input {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      border: 1px solid #ccc;
+      padding: 3px 5px;
+      height: 22px;
+      box-sizing: border-box;
+    }
+    .other-link-row .inp-link-name { width: 160px; }
+    .other-link-row .inp-link-url  { width: 280px; }
+
     /* ── Upcoming list ── */
     #upcoming-list { margin-bottom: 8px; }
     .upcoming-row {
@@ -362,6 +380,11 @@
         <input id="p-instagram" type="text" placeholder="@handle" />
       </div>
       <div class="field" style="margin-bottom:6px">
+        <label>Other links</label>
+        <div id="other-links-list"></div>
+        <button type="button" id="btn-add-otherlink" class="btn-small">+ Add link</button>
+      </div>
+      <div class="field" style="margin-bottom:6px">
         <label>Upcoming exhibitions</label>
         <div id="upcoming-list"></div>
         <button type="button" id="btn-add-upcoming" class="btn-small">+ Add exhibition</button>
@@ -579,6 +602,11 @@
       document.getElementById("p-phone").value = d.phone || "";
       document.getElementById("p-email").value = d.email || "";
       document.getElementById("p-instagram").value = d.instagram || "";
+      var linksList = document.getElementById("other-links-list");
+      linksList.innerHTML = "";
+      (d.otherLinks || []).forEach(function(link) {
+        addOtherLinkRow(link.name, link.url);
+      });
       var list = document.getElementById("upcoming-list");
       list.innerHTML = "";
       (d.upcoming || []).forEach(function(item) {
@@ -620,6 +648,23 @@
     });
   }
 
+  function addOtherLinkRow(name, url) {
+    var row = document.createElement("div");
+    row.className = "other-link-row";
+    row.innerHTML =
+      '<input type="text" class="inp-link-name" placeholder="Name" value="' + esc(name || "") + '" />' +
+      '<input type="text" class="inp-link-url" placeholder="URL" value="' + esc(url || "") + '" />' +
+      '<button type="button" class="btn-small del">Remove</button>';
+    row.querySelector(".del").addEventListener("click", function() {
+      row.parentNode.removeChild(row);
+    });
+    document.getElementById("other-links-list").appendChild(row);
+  }
+
+  document.getElementById("btn-add-otherlink").addEventListener("click", function() {
+    addOtherLinkRow("", "");
+  });
+
   document.getElementById("btn-add-upcoming").addEventListener("click", function() {
     addUpcomingRow("", "", "");
   });
@@ -641,12 +686,20 @@
       });
     });
 
+    var otherLinks = [];
+    document.querySelectorAll("#other-links-list .other-link-row").forEach(function(row) {
+      var name = row.querySelector(".inp-link-name").value.trim();
+      var url  = row.querySelector(".inp-link-url").value.trim();
+      if (name || url) otherLinks.push({ name: name, url: url });
+    });
+
     var data = {
-      bio:       document.getElementById("p-bio").value.trim(),
-      phone:     document.getElementById("p-phone").value.trim(),
-      email:     document.getElementById("p-email").value.trim(),
-      instagram: document.getElementById("p-instagram").value.trim(),
-      upcoming:  upcoming
+      bio:        document.getElementById("p-bio").value.trim(),
+      phone:      document.getElementById("p-phone").value.trim(),
+      email:      document.getElementById("p-email").value.trim(),
+      instagram:  document.getElementById("p-instagram").value.trim(),
+      otherLinks: otherLinks,
+      upcoming:   upcoming
     };
 
     db.collection("profile").doc("main").set(data).then(function() {

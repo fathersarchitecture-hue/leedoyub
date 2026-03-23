@@ -233,6 +233,7 @@
 <div id="sidebar">
   <div class="sb-section" id="sb-bio"></div>
   <div class="sb-section" id="sb-contact"></div>
+  <div class="sb-section" id="sb-links"></div>
   <div class="sb-section" id="sb-upcoming"></div>
 </div>
 
@@ -456,6 +457,17 @@
     }
     if (contactHtml) {
       document.getElementById("sb-contact").innerHTML = contactHtml;
+    }
+
+    // Other links
+    var otherLinks = d.otherLinks || [];
+    if (otherLinks.length) {
+      var linksHtml = '<p>Other links: ';
+      otherLinks.forEach(function(link) {
+        linksHtml += '<a href="' + esc(link.url) + '" target="_blank" rel="noopener" title="' + esc(link.name) + '">📎</a> ';
+      });
+      linksHtml += '</p>';
+      document.getElementById("sb-links").innerHTML = linksHtml;
     }
 
     // Upcoming
