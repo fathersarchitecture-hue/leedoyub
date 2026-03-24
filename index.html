@@ -17,6 +17,7 @@
       margin: 8px;
       padding: 0px;
       background-color: #FFFFFF;
+      overscroll-behavior: none;
     }
 
     a { color: #00f; }
@@ -310,6 +311,18 @@
   var sortDesc = true;
   var allRows = [];
 
+  var docTouchStartY = 0;
+  var docTouchMoved = false;
+  document.addEventListener("touchstart", function(e) {
+    docTouchStartY = e.touches[0].clientY;
+    docTouchMoved = false;
+  }, { passive: true });
+  document.addEventListener("touchmove", function(e) {
+    if (Math.abs(e.touches[0].clientY - docTouchStartY) > 10) {
+      docTouchMoved = true;
+    }
+  }, { passive: true });
+
   function esc(str) {
     return String(str)
       .replace(/&/g, "&amp;")
@@ -471,19 +484,8 @@
         });
       }
 
-      var touchStartY = 0;
-      var touchMoved = false;
-      tr.addEventListener("touchstart", function(e) {
-        touchStartY = e.touches[0].clientY;
-        touchMoved = false;
-      }, { passive: true });
-      tr.addEventListener("touchmove", function(e) {
-        if (Math.abs(e.touches[0].clientY - touchStartY) > 10) {
-          touchMoved = true;
-        }
-      }, { passive: true });
       tr.addEventListener("click", function() {
-        if (touchMoved) return;
+        if (docTouchMoved) return;
         detail.classList.toggle("open");
         if (!detail.classList.contains("open")) {
           var exp = detail.querySelector(".img-expanded");
