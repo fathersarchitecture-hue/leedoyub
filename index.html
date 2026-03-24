@@ -88,9 +88,10 @@
       border-radius: 0;
       padding: 0 3px;
       height: 14px;
-      width: 100%;
-      box-sizing: border-box;
-      display: block;
+      width: auto;
+      margin-left: auto;
+      margin-right: 60px;
+      flex-shrink: 0;
       background: #BBF3E7;
     }
 
@@ -231,6 +232,8 @@
 
       #site-name { padding-left: 3px; }
 
+      #search-input { margin-right: 14%; width: 22%; box-sizing: border-box; }
+
       #sidebar { padding-left: 24px; }
       #sidebar.open { max-height: 900px; }
 
@@ -263,7 +266,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.0.0/firebase-storage-compat.js"></script>
 
 <div id="page-header">
-  <span id="header-index-spacer"></span><span id="site-name-wrap"><a id="site-name" href="#" onclick="toggleSidebar(event)">Lee Doyub</a></span>
+  <span id="header-index-spacer"></span><span id="site-name-wrap"><a id="site-name" href="#" onclick="toggleSidebar(event)">Lee Doyub</a></span><input id="search-input" type="search" placeholder="Search" />
 </div>
 
 <div id="sidebar">
@@ -364,22 +367,20 @@
     }
   }
 
-  var searchInputHTML = '<input id="search-input" type="search" placeholder="Search" />';
-
   function updateThead() {
     var tr = document.querySelector("#works-table thead tr");
     if (isMobile()) {
       tr.innerHTML =
         '<th class="col-index" data-col="yearRank" style="cursor:pointer"></th>' +
         '<th class="col-title" data-col="title" style="cursor:pointer">Title</th>' +
-        '<th class="col-size" data-col="size" style="cursor:pointer"><span class="size-label">Size</span>' + searchInputHTML + '</th>' +
+        '<th class="col-size" data-col="size" style="cursor:pointer">Size</th>' +
         '<th class="col-year" data-col="year" style="cursor:pointer">Year</th>';
     } else {
       tr.innerHTML =
         '<th class="col-index" data-col="yearRank" style="cursor:pointer"></th>' +
         '<th class="col-title" data-col="title" style="cursor:pointer">Title</th>' +
         '<th class="col-medium" data-col="medium" style="cursor:pointer">Medium</th>' +
-        '<th class="col-size" data-col="size" style="cursor:pointer"><span class="size-label">Size</span>' + searchInputHTML + '</th>' +
+        '<th class="col-size" data-col="size" style="cursor:pointer">Size</th>' +
         '<th class="col-year" data-col="year" style="cursor:pointer">Year</th>';
     }
     attachTheadListeners();
@@ -401,24 +402,13 @@
         if (q) filterRows(q);
       });
     });
-    var si = document.getElementById("search-input");
-    if (si) {
-      si.addEventListener("click", function(e) { e.stopPropagation(); });
-      si.addEventListener("input", function() { filterRows(this.value.toLowerCase()); });
-    }
   }
 
   function updateHeaders() {
     document.querySelectorAll("#works-table thead th[data-col]").forEach(function(th) {
       var col = th.getAttribute("data-col");
       var label = colLabels[col];
-      var text = (col === sortCol) ? label + " " + (sortDesc ? "&#9660;" : "&#9650;") : label;
-      if (col === "size") {
-        var span = th.querySelector(".size-label");
-        if (span) span.innerHTML = text;
-      } else {
-        th.innerHTML = text;
-      }
+      th.innerHTML = (col === sortCol) ? label + " " + (sortDesc ? "&#9660;" : "&#9650;") : label;
     });
   }
 
@@ -541,6 +531,10 @@
       allRows.push({ work: work, tr: tr, detail: detail });
     });
   }
+
+  document.getElementById("search-input").addEventListener("input", function() {
+    filterRows(this.value.toLowerCase());
+  });
 
   function filterRows(q) {
     allRows.forEach(function(row) {
