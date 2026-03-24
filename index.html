@@ -118,6 +118,7 @@
       padding: 1px 6px;
       text-align: left;
       vertical-align: bottom;
+      white-space: nowrap;
     }
 
     #works-table thead th.col-index {
@@ -233,18 +234,13 @@
       #sidebar { padding-left: 24px; }
       #sidebar.open { max-height: 900px; }
 
-      #works-table thead th.col-medium,
-      #works-table tbody td.col-medium { display: none; }
-
       #works-table { width: 100%; table-layout: fixed; }
 
-      #works-table colgroup col.col-index  { width: 10%; }
-      #works-table colgroup col.col-title  { width: 55%; }
-      #works-table colgroup col.col-size   { width: 20%; }
-      #works-table colgroup col.col-year   { width: 15%; }
-
       #works-table thead th,
-      #works-table tbody td { padding: 2px 4px; font-size: 11px; word-break: break-word; }
+      #works-table tbody td { padding: 2px 4px; font-size: 11px; word-break: break-word; overflow: hidden; text-overflow: ellipsis; }
+
+      #works-table tbody td.col-title,
+      #works-table tbody td.col-size { white-space: normal; }
 
       #works-table thead th { font-weight: normal; }
       #works-table thead th.col-title { font-weight: bold; }
@@ -329,12 +325,80 @@
 
   var colLabels = { yearRank: "", title: "Title", medium: "Medium", size: "Size", year: "Year" };
 
+  function isMobile() {
+    return window.innerWidth <= 640;
+  }
+
+  function updateColgroup() {
+    var cg = document.querySelector("#works-table colgroup");
+    if (isMobile()) {
+      cg.innerHTML =
+        '<col class="col-index" style="width:8%">' +
+        '<col class="col-title" style="width:56%">' +
+        '<col class="col-size" style="width:22%">' +
+        '<col class="col-year" style="width:14%">';
+    } else {
+      cg.innerHTML =
+        '<col class="col-index" style="width:50px">' +
+        '<col class="col-title" style="width:31%">' +
+        '<col class="col-medium">' +
+        '<col class="col-size">' +
+        '<col class="col-year" style="width:60px">';
+    }
+  }
+
+  function updateThead() {
+    var tr = document.querySelector("#works-table thead tr");
+    if (isMobile()) {
+      tr.innerHTML =
+        '<th class="col-index" data-col="yearRank" style="cursor:pointer"></th>' +
+        '<th class="col-title" data-col="title" style="cursor:pointer">Title</th>' +
+        '<th class="col-size" data-col="size" style="cursor:pointer">Size</th>' +
+        '<th class="col-year" data-col="year" style="cursor:pointer">Year</th>';
+    } else {
+      tr.innerHTML =
+        '<th class="col-index" data-col="yearRank" style="cursor:pointer"></th>' +
+        '<th class="col-title" data-col="title" style="cursor:pointer">Title</th>' +
+        '<th class="col-medium" data-col="medium" style="cursor:pointer">Medium</th>' +
+        '<th class="col-size" data-col="size" style="cursor:pointer">Size</th>' +
+        '<th class="col-year" data-col="year" style="cursor:pointer">Year</th>';
+    }
+    attachTheadListeners();
+  }
+
+  function attachTheadListeners() {
+    document.querySelectorAll("#works-table thead th[data-col]").forEach(function(th) {
+      th.addEventListener("click", function() {
+        var col = this.getAttribute("data-col");
+        if (sortCol === col) {
+          sortDesc = !sortDesc;
+        } else {
+          sortCol = col;
+          sortDesc = true;
+        }
+        updateHeaders();
+        buildTable();
+        var q = document.getElementById("search-input").value.toLowerCase();
+        if (q) filterRows(q);
+      });
+    });
+  }
+
   function updateHeaders() {
     document.querySelectorAll("#works-table thead th[data-col]").forEach(function(th) {
       var col = th.getAttribute("data-col");
       var label = colLabels[col];
       th.innerHTML = (col === sortCol) ? label + " " + (sortDesc ? "&#9660;" : "&#9650;") : label;
     });
+  }
+
+  function renderTable() {
+    updateColgroup();
+    updateThead();
+    updateHeaders();
+    buildTable();
+    var q = document.getElementById("search-input").value.toLowerCase();
+    if (q) filterRows(q);
   }
 
   function buildTable() {
@@ -355,13 +419,14 @@
       return sortDesc ? -cmp : cmp;
     });
 
+    var mobile = isMobile();
     sorted.forEach(function(work) {
       var tr = document.createElement("tr");
       tr.className = "work-row";
       tr.innerHTML =
         '<td class="col-index">' + work.yearRank + '</td>' +
         '<td class="col-title">' + esc(work.title) + '</td>' +
-        '<td class="col-medium">' + esc(work.medium) + '</td>' +
+        (mobile ? '' : '<td class="col-medium">' + esc(work.medium) + '</td>') +
         '<td class="col-size" data-cm="' + esc(work.size) + '" data-unit="cm">' + esc(work.size) + '</td>' +
         '<td class="col-year">' + esc(String(work.year)) + '</td>';
 
@@ -369,7 +434,7 @@
       detail.className = "detail-row";
       var caption = esc(work.medium) + ' &mdash; ' + esc(work.size) + ' &mdash; ' + esc(String(work.year));
       detail.innerHTML =
-        '<td colspan="5">' +
+        '<td colspan="' + (mobile ? 4 : 5) + '">' +
           '<div class="detail-inner">' +
             '<div>' + esc(work.description) + '</div>' +
             '<div class="detail-meta">' + caption + '</div>' +
@@ -443,22 +508,6 @@
       allRows.push({ work: work, tr: tr, detail: detail });
     });
   }
-
-  document.querySelectorAll("#works-table thead th[data-col]").forEach(function(th) {
-    th.addEventListener("click", function() {
-      var col = this.getAttribute("data-col");
-      if (sortCol === col) {
-        sortDesc = !sortDesc;
-      } else {
-        sortCol = col;
-        sortDesc = true;
-      }
-      updateHeaders();
-      buildTable();
-      var q = document.getElementById("search-input").value.toLowerCase();
-      if (q) filterRows(q);
-    });
-  });
 
   document.getElementById("search-input").addEventListener("input", function() {
     filterRows(this.value.toLowerCase());
@@ -547,8 +596,13 @@
     var byYear = works.slice().sort(function(a, b) { return a.year - b.year; });
     byYear.forEach(function(w, i) { w.yearRank = i + 1; });
 
-    buildTable();
-    updateHeaders();
+    renderTable();
+  });
+
+  var resizeTimer;
+  window.addEventListener("resize", function() {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(renderTable, 150);
   });
 </script>
 </body>
