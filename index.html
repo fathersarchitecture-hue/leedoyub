@@ -322,6 +322,11 @@
       docTouchMoved = true;
     }
   }, { passive: true });
+  document.addEventListener("touchend", function() {
+    if (docTouchMoved) {
+      setTimeout(function() { docTouchMoved = false; }, 350);
+    }
+  }, { passive: true });
 
   function esc(str) {
     return String(str)
