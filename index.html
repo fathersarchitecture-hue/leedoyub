@@ -426,14 +426,16 @@
     });
   }
 
-  function renderTable() {
-    updateColgroup();
-    updateThead();
-    updateHeaders();
-    buildTable();
-    var q = document.getElementById("search-input").value.toLowerCase();
-    if (q) filterRows(q);
-  }
+function renderTable() {
+  var scrollY = window.scrollY; // 현재 스크롤 위치 저장
+  updateColgroup();
+  updateThead();
+  updateHeaders();
+  buildTable();
+  var q = document.getElementById("search-input").value.toLowerCase();
+  if (q) filterRows(q);
+  window.scrollTo(0, scrollY); // 스크롤 위치 복원
+}
 
   function buildTable() {
     var tbody = document.getElementById("works-body");
