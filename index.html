@@ -605,20 +605,27 @@ function renderTable() {
       document.getElementById("sb-links").innerHTML = linksHtml;
     }
 
-    // Upcoming
-    var upcoming = d.upcoming || [];
-    if (upcoming.length) {
-      var html = '<p><span class="sb-label">Upcoming</span></p>';
-      upcoming.forEach(function(item, i) {
-        if (i > 0) html += "<br>";
-        html += "<p>";
-        if (item.title)     html += "<em>" + esc(item.title) + "</em><br>";
-        if (item.dateRange) html += esc(item.dateRange) + "<br>";
-        if (item.venue)     html += esc(item.venue);
-        html += "</p>";
+    // Exhibitions (Current / Upcoming)
+    var exhibitions = d.upcoming || [];
+    var exHtml = "";
+    [["current", "Current"], ["upcoming", "Upcoming"]].forEach(function(g) {
+      var items = exhibitions.filter(function(it) {
+        // status가 없는 예전 데이터는 upcoming으로 처리
+        return (it.status === "current" ? "current" : "upcoming") === g[0];
       });
-      document.getElementById("sb-upcoming").innerHTML = html;
-    }
+      if (!items.length) return;            // 비어 있는 섹션은 숨김
+      if (exHtml) exHtml += "<br>";
+      exHtml += '<p><span class="sb-label">' + g[1] + '</span></p>';
+      items.forEach(function(item, i) {
+        if (i > 0) exHtml += "<br>";
+        exHtml += "<p>";
+        if (item.title)     exHtml += "<em>" + esc(item.title) + "</em><br>";
+        if (item.dateRange) exHtml += esc(item.dateRange) + "<br>";
+        if (item.venue)     exHtml += esc(item.venue);
+        exHtml += "</p>";
+      });
+    });
+    if (exHtml) document.getElementById("sb-upcoming").innerHTML = exHtml;
   });
 
   // Load works from Firestore
