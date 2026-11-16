@@ -131,7 +131,7 @@
     .btn-upload-link:hover { background: #f4f4f4; }
     .btn-upload-link.uploading { color: #888; cursor: default; }
 
-    /* ── Upcoming list ── */
+    /* ── Exhibitions list ── */
     #upcoming-list { margin-bottom: 8px; }
     .upcoming-row {
       display: flex;
@@ -150,6 +150,13 @@
     .upcoming-row .inp-date-from,
     .upcoming-row .inp-date-to   { width: 96px; }
     .upcoming-row .inp-venue     { width: 200px; }
+    .upcoming-row select {
+      font: normal 12px Arial, Helvetica, sans-serif;
+      border: 1px solid #ccc;
+      background: #fff;
+      height: 22px;
+      box-sizing: border-box;
+    }
 
     .btn-small {
       font: normal 11px Arial, Helvetica, sans-serif;
@@ -395,7 +402,7 @@
         <button type="button" id="btn-add-otherlink" class="btn-small">+ Add link</button>
       </div>
       <div class="field" style="margin-bottom:6px">
-        <label>Upcoming exhibitions</label>
+        <label>Exhibitions</label>
         <div id="upcoming-list"></div>
         <button type="button" id="btn-add-upcoming" class="btn-small">+ Add exhibition</button>
       </div>
@@ -620,12 +627,12 @@
       var list = document.getElementById("upcoming-list");
       list.innerHTML = "";
       (d.upcoming || []).forEach(function(item) {
-        addUpcomingRow(item.title, item.dateRange, item.venue);
+        addUpcomingRow(item.title, item.dateRange, item.venue, item.status);
       });
     });
   }
 
-  function addUpcomingRow(title, dateRange, venue) {
+  function addUpcomingRow(title, dateRange, venue, status) {
     // Parse existing "DD.MM.YYYY — DD.MM.YYYY" back into two parts
     var fromVal = "", toVal = "";
     if (dateRange) {
@@ -637,11 +644,18 @@
     var row = document.createElement("div");
     row.className = "upcoming-row";
     row.innerHTML =
+      '<select class="inp-status">' +
+        '<option value="current">Current</option>' +
+        '<option value="upcoming">Upcoming</option>' +
+      '</select>' +
       '<input type="text" class="inp-title" placeholder="Title" value="' + esc(title || "") + '" />' +
       '<input type="text" class="inp-date-from" placeholder="From" readonly />' +
       '<input type="text" class="inp-date-to" placeholder="To" readonly />' +
       '<input type="text" class="inp-venue" placeholder="Venue" value="' + esc(venue || "") + '" />' +
       '<button type="button" class="btn-small del">Remove</button>';
+
+    // status 없는 예전 데이터는 upcoming으로 처리
+    row.querySelector(".inp-status").value = (status === "current") ? "current" : "upcoming";
 
     row.querySelector(".del").addEventListener("click", function() {
       row.parentNode.removeChild(row);
@@ -736,7 +750,7 @@
   });
 
   document.getElementById("btn-add-upcoming").addEventListener("click", function() {
-    addUpcomingRow("", "", "");
+    addUpcomingRow("", "", "", "upcoming");
   });
 
   document.getElementById("profile-form").addEventListener("submit", function(e) {
@@ -752,7 +766,8 @@
       upcoming.push({
         title:     row.querySelector(".inp-title").value.trim(),
         dateRange: dateRange,
-        venue:     row.querySelector(".inp-venue").value.trim()
+        venue:     row.querySelector(".inp-venue").value.trim(),
+        status:    row.querySelector(".inp-status").value
       });
     });
 
